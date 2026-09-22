@@ -124,7 +124,14 @@ no time-series backend endpoint behind these numbers, so no sparkline was
 added rather than faking one). The marketplace and Past Interest pages are
 dense, sortable-by-eye tables with initial-avatar circles, colored icon
 action buttons, and centered icon+message empty states, consistent across
-both client and supplier roles.
+both client and supplier roles. Clicking any counterpart's name — on a
+match card, a marketplace row, or a Past Interest row — opens a right-side
+detail slide-over with that client/supplier's full profile (closes on
+Escape, backdrop click, or the close button). This required loosening
+`GET /clients/{id}` and `GET /suppliers/{id}` from owner-only to any
+authenticated user; the response shape is unchanged, and this only removes
+an inconsistency, since the marketplace endpoints already expose the same
+fields to any authenticated user.
 
 ## Setup instructions
 
@@ -287,8 +294,9 @@ matchmaking-platform/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/            # axios client + typed API calls
-│   │   ├── components/     # Sidebar, StatCard, EmptyState, InitialAvatar, ScoreBadge,
-│   │   │                   # ScoreBreakdown, MatchCard, InterestStatusBadge, NotificationPanel, etc.
+│   │   ├── components/     # Sidebar, StatCard, EmptyState, InitialAvatar, DetailSlideOver,
+│   │   │                   # ScoreBadge, ScoreBreakdown, MatchCard, InterestStatusBadge,
+│   │   │                   # NotificationPanel, etc.
 │   │   ├── context/         # AuthContext
 │   │   ├── pages/           # Login, Register, Dashboard, Client/Supplier forms,
 │   │   │                    # Marketplace (dense table), Past Interest (dense table)

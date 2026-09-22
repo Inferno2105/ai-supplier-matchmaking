@@ -14,6 +14,7 @@ import {
 import StatCard from "../components/StatCard";
 import MatchCard from "../components/MatchCard";
 import EmptyState from "../components/EmptyState";
+import DetailSlideOver from "../components/DetailSlideOver";
 
 const interestKey = (clientId, supplierId) => `${clientId}::${supplierId}`;
 
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [interests, setInterests] = useState([]);
   const [actionError, setActionError] = useState("");
+  const [detail, setDetail] = useState({ open: false, type: null, id: null });
 
   useEffect(() => {
     getDashboardOverview().then(setStats);
@@ -85,6 +87,14 @@ export default function DashboardPage() {
     } catch (err) {
       setActionError(err.response?.data?.detail ?? "Could not send interest.");
     }
+  };
+
+  const openCounterpartDetail = (match) => {
+    setDetail({
+      open: true,
+      type: isClient ? "supplier" : "client",
+      id: isClient ? match.supplier_id : match.client_id,
+    });
   };
 
   return (
@@ -187,11 +197,19 @@ export default function DashboardPage() {
                 match={m}
                 interested={interestedPairs.has(interestKey(m.client_id, m.supplier_id))}
                 onExpressInterest={() => handleExpressInterest(m)}
+                onNameClick={() => openCounterpartDetail(m)}
               />
             ))}
           </div>
         </div>
       </div>
+
+      <DetailSlideOver
+        open={detail.open}
+        type={detail.type}
+        id={detail.id}
+        onClose={() => setDetail({ open: false, type: null, id: null })}
+      />
     </div>
   );
 }

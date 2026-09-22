@@ -35,12 +35,10 @@ async def my_requirements(current: TokenData = Depends(require_role("client"))):
 
 @router.get("/{client_id}", response_model=ClientOut)
 async def get_client(client_id: str, current: TokenData = Depends(get_current_user)):
+    # Open to any authenticated user, not just the owner — the marketplace
+    # endpoints already expose these same fields to any authenticated user,
+    # so this closes an inconsistency rather than adding new exposure.
     doc = await client_profiles.find_one({"_id": ObjectId(client_id)})
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Requirement not found")
-    # Role-scoped: only the owning client, or a supplier looking at a matched
-    # counterpart, should be able to view this. Kept simple for the demo:
-    # owner-only. Suppliers see client info via the matches endpoint instead.
-    if current.role == "client" and doc["user_id"] != current.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your requirement")
     return _to_out(doc)

@@ -5,12 +5,14 @@ import { getMyInterests, acceptInterest, declineInterest } from "../api/resource
 import InitialAvatar from "../components/InitialAvatar";
 import InterestStatusBadge from "../components/InterestStatusBadge";
 import EmptyState from "../components/EmptyState";
+import DetailSlideOver from "../components/DetailSlideOver";
 
 export default function PastInterestPage() {
   const { user } = useAuth();
   const [interests, setInterests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState("");
+  const [detail, setDetail] = useState({ open: false, type: null, id: null });
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -75,12 +77,22 @@ export default function PastInterestPage() {
                   return (
                     <tr key={i.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDetail({
+                              open: true,
+                              type: user.role === "client" ? "supplier" : "client",
+                              id: user.role === "client" ? i.supplier_id : i.client_id,
+                            })
+                          }
+                          className="flex items-center gap-3 text-left"
+                        >
                           <InitialAvatar name={i.counterpart_name} />
-                          <span className="font-medium text-slate-900">
+                          <span className="font-medium text-slate-900 hover:text-indigo-600 hover:underline">
                             {i.counterpart_name ?? "Unknown"}
                           </span>
-                        </div>
+                        </button>
                       </td>
                       <td className="max-w-xs truncate px-4 py-3 text-slate-600" title={i.counterpart_product}>
                         {i.counterpart_product}
@@ -123,6 +135,13 @@ export default function PastInterestPage() {
           </div>
         )}
       </div>
+
+      <DetailSlideOver
+        open={detail.open}
+        type={detail.type}
+        id={detail.id}
+        onClose={() => setDetail({ open: false, type: null, id: null })}
+      />
     </div>
   );
 }

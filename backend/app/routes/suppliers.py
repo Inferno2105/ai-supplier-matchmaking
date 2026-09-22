@@ -35,9 +35,9 @@ async def my_offerings(current: TokenData = Depends(require_role("supplier"))):
 
 @router.get("/{supplier_id}", response_model=SupplierOut)
 async def get_supplier(supplier_id: str, current: TokenData = Depends(get_current_user)):
+    # Open to any authenticated user, not just the owner — see clients.py's
+    # get_client for the matching rationale.
     doc = await supplier_profiles.find_one({"_id": ObjectId(supplier_id)})
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Offering not found")
-    if current.role == "supplier" and doc["user_id"] != current.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your offering")
     return _to_out(doc)

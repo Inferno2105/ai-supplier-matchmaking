@@ -2,12 +2,22 @@ import { Handshake, CheckCircle2 } from "lucide-react";
 import ScoreBadge from "./ScoreBadge";
 import ScoreBreakdown from "./ScoreBreakdown";
 
-export default function MatchCard({ match, interested, onExpressInterest }) {
+export default function MatchCard({ match, interested, onExpressInterest, onNameClick }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-medium text-slate-900">{match.counterpart_name ?? "Unknown"}</p>
+          {onNameClick ? (
+            <button
+              type="button"
+              onClick={onNameClick}
+              className="font-medium text-slate-900 hover:text-indigo-600 hover:underline"
+            >
+              {match.counterpart_name ?? "Unknown"}
+            </button>
+          ) : (
+            <p className="font-medium text-slate-900">{match.counterpart_name ?? "Unknown"}</p>
+          )}
           <p className="mt-0.5 line-clamp-2 text-sm text-slate-500">
             {match.counterpart_product}
           </p>

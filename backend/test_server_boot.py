@@ -66,6 +66,7 @@ r = client.post("/clients", json={
 }, headers={"Authorization": f"Bearer {token}"})
 print(r.status_code, r.json())
 assert r.status_code == 201
+acme_client_id = r.json()["id"]
 
 print("\n--- GET /dashboard/overview ---")
 r = client.get("/dashboard/overview")
@@ -86,6 +87,32 @@ assert r.status_code == 403
 
 print("\n--- GET /clients/me without token (should 401) ---")
 r = client.get("/clients/me")
+print(r.status_code)
+assert r.status_code == 401
+
+print("\n--- POST /suppliers as the supplier account ---")
+r = client.post("/suppliers", json={
+    "supplier_name": "SteelCo", "product_offered": "steel piping",
+    "category": "Raw Materials & Metals", "available_quantity": 500,
+    "price_min": 10000, "price_max": 20000, "state": "Maharashtra",
+    "city": "Mumbai", "delivery_days_capable": 20, "notes": ""
+}, headers={"Authorization": f"Bearer {sup_token}"})
+print(r.status_code, r.json())
+assert r.status_code == 201
+steelco_supplier_id = r.json()["id"]
+
+print("\n--- GET /clients/{id} as a DIFFERENT user's supplier account (should 200, not 403) ---")
+r = client.get(f"/clients/{acme_client_id}", headers={"Authorization": f"Bearer {sup_token}"})
+print(r.status_code, r.json())
+assert r.status_code == 200
+
+print("\n--- GET /suppliers/{id} as a DIFFERENT user's client account (should 200, not 403) ---")
+r = client.get(f"/suppliers/{steelco_supplier_id}", headers={"Authorization": f"Bearer {token}"})
+print(r.status_code, r.json())
+assert r.status_code == 200
+
+print("\n--- GET /clients/{id} without a token (should still 401) ---")
+r = client.get(f"/clients/{acme_client_id}")
 print(r.status_code)
 assert r.status_code == 401
 

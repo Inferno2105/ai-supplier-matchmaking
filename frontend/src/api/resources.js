@@ -20,12 +20,16 @@ export const createClientRequirement = (payload) =>
 export const getMyRequirements = () =>
   api.get("/clients/me").then((r) => r.data);
 
+export const getClientById = (id) => api.get(`/clients/${id}`).then((r) => r.data);
+
 // --- Supplier portal ---
 export const createSupplierOffering = (payload) =>
   api.post("/suppliers", payload).then((r) => r.data);
 
 export const getMyOfferings = () =>
   api.get("/suppliers/me").then((r) => r.data);
+
+export const getSupplierById = (id) => api.get(`/suppliers/${id}`).then((r) => r.data);
 
 // --- Matches ---
 export const getMatchesForClient = (clientId) =>

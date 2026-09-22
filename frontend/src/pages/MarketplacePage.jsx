@@ -13,6 +13,7 @@ import {
 import { SelectField } from "../components/FormFields";
 import InitialAvatar from "../components/InitialAvatar";
 import EmptyState from "../components/EmptyState";
+import DetailSlideOver from "../components/DetailSlideOver";
 
 export default function MarketplacePage() {
   const { user } = useAuth();
@@ -29,6 +30,7 @@ export default function MarketplacePage() {
   const [myProfiles, setMyProfiles] = useState([]);
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [error, setError] = useState("");
+  const [detail, setDetail] = useState({ open: false, type: null, id: null });
 
   useEffect(() => {
     getCategories().then(setCategories);
@@ -181,10 +183,18 @@ export default function MarketplacePage() {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDetail({ open: true, type: isClient ? "supplier" : "client", id: item.id })
+                          }
+                          className="flex items-center gap-3 text-left hover:text-indigo-600"
+                        >
                           <InitialAvatar name={name} />
-                          <span className="font-medium text-slate-900">{name}</span>
-                        </div>
+                          <span className="font-medium text-slate-900 hover:text-indigo-600 hover:underline">
+                            {name}
+                          </span>
+                        </button>
                       </td>
                       <td className="max-w-xs truncate px-4 py-3 text-slate-600" title={product}>
                         {product}
@@ -223,6 +233,13 @@ export default function MarketplacePage() {
           </div>
         )}
       </div>
+
+      <DetailSlideOver
+        open={detail.open}
+        type={detail.type}
+        id={detail.id}
+        onClose={() => setDetail({ open: false, type: null, id: null })}
+      />
     </div>
   );
 }
