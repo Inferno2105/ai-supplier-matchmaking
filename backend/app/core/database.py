@@ -15,6 +15,7 @@ client_profiles = db["client_profiles"]
 supplier_profiles = db["supplier_profiles"]
 matches = db["matches"]
 notifications = db["notifications"]
+interests = db["interests"]
 
 
 async def ensure_indexes():
@@ -28,3 +29,9 @@ async def ensure_indexes():
     await matches.create_index("client_id")
     await matches.create_index("supplier_id")
     await notifications.create_index("user_id")
+    # Not unique: a declined Interest can be followed by a fresh one from
+    # the other side, so the same (client_id, supplier_id) pair can have
+    # more than one Interest document over time.
+    await interests.create_index([("client_id", 1), ("supplier_id", 1)])
+    await interests.create_index("client_id")
+    await interests.create_index("supplier_id")

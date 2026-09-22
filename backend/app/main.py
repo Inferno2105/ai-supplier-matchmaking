@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import ensure_indexes
-from app.routes import auth, clients, suppliers, matches, notifications, dashboard, reference
+from app.routes import auth, clients, suppliers, matches, notifications, dashboard, reference, interests, marketplace
 
 
 @asynccontextmanager
@@ -29,6 +29,8 @@ app.include_router(matches.router)
 app.include_router(notifications.router)
 app.include_router(dashboard.router)
 app.include_router(reference.router)
+app.include_router(interests.router)
+app.include_router(marketplace.router)
 
 
 @app.get("/")

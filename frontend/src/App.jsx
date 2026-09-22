@@ -8,6 +8,7 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ClientFormPage from "./pages/ClientFormPage";
 import SupplierFormPage from "./pages/SupplierFormPage";
+import MarketplacePage from "./pages/MarketplacePage";
 
 function Bootstrap({ children }) {
   const { bootstrapFromToken } = useAuth();
@@ -30,6 +31,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/marketplace"
+          element={
+            <ProtectedRoute>
+              <MarketplacePage />
             </ProtectedRoute>
           }
         />

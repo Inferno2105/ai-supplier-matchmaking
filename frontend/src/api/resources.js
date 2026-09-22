@@ -44,3 +44,22 @@ export const markNotificationRead = (id) =>
 // --- Dashboard ---
 export const getDashboardOverview = () =>
   api.get("/dashboard/overview").then((r) => r.data);
+
+// --- Marketplace ---
+export const getMarketplaceSuppliers = (filters = {}) =>
+  api.get("/marketplace/suppliers", { params: filters }).then((r) => r.data);
+
+export const getMarketplaceClients = (filters = {}) =>
+  api.get("/marketplace/clients", { params: filters }).then((r) => r.data);
+
+// --- Interests ---
+export const expressInterest = (clientId, supplierId) =>
+  api.post("/interests", { client_id: clientId, supplier_id: supplierId }).then((r) => r.data);
+
+export const getMyInterests = () => api.get("/interests/me").then((r) => r.data);
+
+export const acceptInterest = (id) =>
+  api.patch(`/interests/${id}/accept`).then((r) => r.data);
+
+export const declineInterest = (id) =>
+  api.patch(`/interests/${id}/decline`).then((r) => r.data);

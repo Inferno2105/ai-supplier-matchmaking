@@ -2,7 +2,9 @@
 
 A web platform that connects clients with suitable suppliers using a genuine
 AI/ML matching engine — semantic embeddings plus a weighted, explainable
-scoring model, not keyword matching.
+scoring model, not keyword matching. Beyond automatic matching, either side
+can also browse the full marketplace and express interest directly in a
+specific counterpart, independent of the scoring engine.
 
 Built for the Wisdom Group AI Intern evaluation.
 
@@ -193,8 +195,9 @@ it clears only these exact seeded accounts first.
 
 ```bash
 cd backend
-python test_pipeline.py        # matching engine logic, in-memory mock DB
-python test_server_boot.py     # full HTTP API surface, in-memory mock DB
+python test_pipeline.py                  # matching engine logic, in-memory mock DB
+python test_server_boot.py               # full HTTP API surface, in-memory mock DB
+python test_interests_marketplace.py     # Interest rules + marketplace browsing, in-memory mock DB
 ```
 
 Both use `mongomock-motor` so they run without a real MongoDB instance —
@@ -224,9 +227,28 @@ auto-generates this from the route definitions). Summary:
 | GET | `/dashboard/overview` | Aggregate stats (totals, average score) |
 | GET | `/categories` | Fixed category dropdown list |
 | GET | `/locations` | State → city dropdown data |
+| GET | `/marketplace/suppliers?category=&state=` | Client-facing: every supplier offering, not just same-category matches, with `already_interested` per item |
+| GET | `/marketplace/clients?category=&state=` | Supplier-facing mirror of the above |
+| POST | `/interests` | Express interest in a specific client/supplier pair — does **not** touch the matching/embedding engine |
+| GET | `/interests/me` | Current user's Interest records (both sides), newest first |
+| PATCH | `/interests/{id}/accept` | Only the non-initiating side; `proposed` → `accepted` |
+| PATCH | `/interests/{id}/decline` | Only the non-initiating side; `proposed` → `declined` |
 
 No edit/update endpoints and no separate admin role — see
 [Known limitations](#known-limitations--future-work).
+
+### Interest vs. Match
+
+`Interest` is a separate concept from `Match` and deliberately decoupled
+from the scoring engine: expressing interest is a plain record write, never
+a trigger for re-embedding or re-scoring. A `Match` between the same
+client/supplier pair may or may not exist — the frontend looks it up
+independently and shows the score as context, but `POST /interests` neither
+requires nor creates one. Only `proposed → accepted / declined` exists;
+there's no "completed" status, since this platform tracks matchmaking
+interest, not deal fulfillment (payment, shipping, delivery). A declined
+Interest blocks only the side that was declined from re-proposing to the
+same counterpart — the side that declined is free to initiate a fresh one.
 
 ## Project structure
 
@@ -236,22 +258,23 @@ matchmaking-platform/
 │   ├── app/
 │   │   ├── core/          # config, MongoDB connection, JWT/auth
 │   │   ├── data/          # fixed categories, state/city lookup
-│   │   ├── models/        # Pydantic schemas (User, Client, Supplier, Match, Notification)
-│   │   ├── routes/        # FastAPI routers, one per resource
+│   │   ├── models/        # Pydantic schemas (User, Client, Supplier, Match, Notification, Interest, Marketplace)
+│   │   ├── routes/        # FastAPI routers, one per resource (incl. interests, marketplace)
 │   │   ├── services/      # embeddings, sub-scoring, matching orchestration
 │   │   └── main.py        # app entrypoint, router wiring, CORS
-│   ├── seed.py             # demo data seeding script
-│   ├── test_pipeline.py    # matching engine regression test
-│   ├── test_server_boot.py # full API surface regression test
+│   ├── seed.py                        # demo data seeding script
+│   ├── test_pipeline.py               # matching engine regression test
+│   ├── test_server_boot.py            # full API surface regression test
+│   ├── test_interests_marketplace.py  # Interest rules + marketplace browsing regression test
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   └── .env.example
 ├── frontend/
 │   ├── src/
 │   │   ├── api/            # axios client + typed API calls
-│   │   ├── components/     # ScoreBadge, ScoreBreakdown, Navbar, MatchCard, etc.
+│   │   ├── components/     # ScoreBadge, ScoreBreakdown, Navbar, MatchCard, InterestStatusBadge, etc.
 │   │   ├── context/         # AuthContext
-│   │   ├── pages/           # Login, Register, Dashboard, Client/Supplier forms
+│   │   ├── pages/           # Login, Register, Dashboard, Client/Supplier forms, Marketplace
 │   │   └── App.jsx          # routing
 │   ├── Dockerfile
 │   └── nginx.conf
