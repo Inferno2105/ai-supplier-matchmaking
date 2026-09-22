@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB_NAME: matchmaking
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-long-random-string}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: "1440"
+      MATCH_NOTIFY_THRESHOLD: "60"
+      EMBEDDING_MODEL_NAME: all-MiniLM-L6-v2
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mongo_data:

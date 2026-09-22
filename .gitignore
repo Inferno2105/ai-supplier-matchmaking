@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Environment
+.env
+!.env.example
+
+# Node / frontend
+node_modules/
+dist/
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Sandbox-only test artifacts (kept out of the repo; test_*.py in backend/ ARE tracked as real tests)
+tests_manual_integration.py
