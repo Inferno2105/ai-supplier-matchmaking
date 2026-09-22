@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="AI-Powered Client-Supplier Matchmaking Platform", lifespan=lifespan)
+app = FastAPI(title="Supplynk API — AI-Powered Client-Supplier Matchmaking Platform", lifespan=lifespan)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -57,4 +57,4 @@ app.include_router(settings_routes.router)
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "service": "matchmaking-platform-backend"}
+    return {"status": "ok", "service": "supplynk-backend"}

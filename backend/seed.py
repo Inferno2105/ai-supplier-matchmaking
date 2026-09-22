@@ -1,12 +1,12 @@
 """
-Seeds the database with realistic demo data: a handful of client
+Seeds the database with realistic sample data: a handful of client
 requirements and supplier offerings across a few categories, so the
 matching engine has something to work with immediately after setup.
 
 Run against a REAL MongoDB instance (not the sandbox mock):
     python seed.py
 
-Safe to re-run — it clears existing demo users/data with these exact
+Safe to re-run — it clears existing seeded users/data with these exact
 emails first, rather than accumulating duplicates.
 """
 
@@ -262,9 +262,9 @@ async def get_or_create_user(email: str, role: Role, profile_fields: dict) -> st
 
 
 async def seed():
-    print("Seeding demo data...\n")
+    print("Seeding sample data...\n")
 
-    # Clear any previous demo data tied to these exact emails, so re-running is safe.
+    # Clear any previously seeded data tied to these exact emails, so re-running is safe.
     demo_emails = [c["email"] for c in CLIENTS] + [s["email"] for s in SUPPLIERS]
     existing_users = users.find({"email": {"$in": demo_emails}})
     existing_ids = [str(u["_id"]) async for u in existing_users]
@@ -272,7 +272,7 @@ async def seed():
         await client_profiles.delete_many({"user_id": {"$in": existing_ids}})
         await supplier_profiles.delete_many({"user_id": {"$in": existing_ids}})
         await users.delete_many({"email": {"$in": demo_emails}})
-        print(f"Cleared {len(existing_ids)} previous demo user(s) and their data.\n")
+        print(f"Cleared {len(existing_ids)} previously seeded user(s) and their data.\n")
 
     client_ids = []
     for c in CLIENTS:
@@ -307,7 +307,7 @@ async def seed():
         results = await run_matching_for_client(client_id)
         print(f"  {len(results)} match(es) generated for client {client_id}")
 
-    print(f"\nDone. Demo login password for all seeded accounts: {DEMO_PASSWORD}")
+    print(f"\nDone. Password for all seeded accounts: {DEMO_PASSWORD}")
     print("Example: acme.manufacturing@demo.com / demo12345 (client)")
     print("Example: steelco.industries@demo.com / demo12345 (supplier)")
 

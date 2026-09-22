@@ -78,20 +78,36 @@ export default function Sidebar() {
         collapsed ? "w-16" : "w-60"
       }`}
     >
-      <div className="flex items-center justify-between px-3 py-4">
-        {!collapsed && (
-          <span className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
-            Matchmaking
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          title={collapsed ? "Expand" : "Collapse"}
-          className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-        >
-          {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
-        </button>
+      {/*
+        Wordmark. The header always holds two things (mark + collapse
+        toggle), unlike a nav row's single icon, so collapsing it stacks
+        them vertically instead of the icon-stays/label-disappears pattern
+        used elsewhere in the sidebar — side-by-side, "S" and the toggle
+        button don't both fit in the collapsed w-16 rail. `truncate` is a
+        safety net, not the expected render path — text-2xl/tracking-
+        [0.12em] was sized to fit "SUPPLYNK" inside the expanded w-60 rail
+        without it ever kicking in under normal conditions.
+      */}
+      <div className="px-3 py-5">
+        <div className={collapsed ? "flex flex-col items-center gap-3" : "flex items-center justify-between gap-2"}>
+          {!collapsed ? (
+            <span
+              className={`truncate font-wordmark text-2xl font-semibold uppercase tracking-[0.12em] ${accent.text}`}
+            >
+              Supplynk
+            </span>
+          ) : (
+            <span className={`font-wordmark text-xl font-semibold tracking-widest ${accent.text}`}>S</span>
+          )}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            title={collapsed ? "Expand" : "Collapse"}
+            className="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+          >
+            {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-2">

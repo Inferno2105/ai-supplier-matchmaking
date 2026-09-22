@@ -1,6 +1,6 @@
 """
-In-app notification model. No SMTP/WebSocket for this submission — just a
-DB record surfaced via GET /notifications/me.
+In-app notification model. No SMTP/WebSocket — notifications are DB
+records surfaced via GET /notifications/me.
 """
 
 from datetime import datetime, timezone

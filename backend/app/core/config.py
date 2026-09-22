@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # --- Auth ---
     jwt_secret: str = "CHANGE_ME_IN_PRODUCTION"
     jwt_algorithm: str = "HS256"
-    jwt_expire_minutes: int = 60 * 24  # 24 hours, fine for a demo
+    jwt_expire_minutes: int = 60 * 24  # 24 hours; refresh-token rotation is the natural next hardening step
 
     # --- Matching engine weights (must sum to 1.0) ---
     weight_semantic: float = 0.35

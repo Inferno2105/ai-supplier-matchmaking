@@ -1,8 +1,8 @@
 """
 Static state -> city lookup, used for the location dropdowns and for the
 3-tier location score (same city / same state / different state).
-Not exhaustive — covers major Indian business hubs, which is enough for a
-demo. Easy to extend later without touching any matching logic.
+Not exhaustive — covers major Indian business hubs. Easy to extend later
+without touching any matching logic.
 """
 
 STATE_CITIES = {

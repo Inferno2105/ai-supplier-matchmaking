@@ -1,4 +1,4 @@
-# AI-Powered Client–Supplier Matchmaking Platform
+# Supplynk — AI-Powered Client–Supplier Matchmaking Platform
 
 A web platform that connects clients with suitable suppliers using a genuine
 AI/ML matching engine — semantic embeddings plus a weighted, explainable
@@ -157,22 +157,40 @@ page, so ongoing conversations don't get lost in the full interest history.
 
 **Role-based accent color**: the logged-in user's role is now visually
 obvious everywhere, not just inferable from "Your requirements/offerings"
-— a client's UI accents in indigo, a supplier's in violet (the same
-color-coding StatCard already used for "Total clients" vs. "Total
-suppliers"). Applied to the sidebar's active nav item, the role badge next
-to the account email (and on the Settings profile section), primary action
+— a client's UI accents in a sage/green pastel, a supplier's in a
+peach/pink pastel, each a fixed 4-tier palette (darkest/mid/soft/lightest).
+Applied to the sidebar's active nav item, the role badge next to the
+account email (and on the Settings profile section), primary action
 buttons (Submit requirement/offering, Express Interest, Save in Settings,
 Send in chat, New requirement/offering), and a colored left-border accent
 on the Dashboard's own-listing cards, Match cards, and Past Interest/Chats
 rows. `ScoreBadge` (match quality) and `InterestStatusBadge` (interest
 status) deliberately keep their own independent emerald/lime/amber/rose
-coding, untouched by role. See `frontend/src/roleTheme.js`.
+coding, untouched by role.
+
+The palette is wired in as CSS custom properties (`--role-darkest`,
+`--role-mid`, etc.), scoped by a `data-role` attribute the app shell sets
+once on its root element, rather than picked per-component in Tailwind
+classes — so the actual color values live in exactly one place
+(`frontend/src/roleTheme.js` + the `[data-role]` block in
+`frontend/src/index.css`) and every component just references
+`var(--role-button-bg)` and the like. Because these are pastel tiers, raw
+`mid`-as-button-background (white text) was checked against WCAG contrast
+math and rejected for both roles (1.8–2.1:1, unreadable) in favor of
+`darkest`-as-button-background (3.8:1 client / 8.9:1 supplier) — and a
+second, independent check for dark mode found supplier's `darkest`
+(a plain gray) nearly invisible against the app's dark surfaces, so
+dark-mode text/icon accents (not buttons, which are unaffected by page
+background) swap to `mid` instead, with a low-opacity `color-mix()` tint
+standing in for the light-mode `lightest` background so it doesn't wash
+out on a dark sidebar. The full contrast numbers and reasoning are
+documented in `roleTheme.js`.
 
 Dark mode is available from Settings → Appearance (a toggle, not a
 separate page), persisted to `localStorage` and applied before first paint
-so there's no flash of the wrong theme on reload. It reuses the same
-semantic colors (indigo/violet/slate/emerald/amber/rose) throughout, just
-with `dark:` variants — no separate dark palette.
+so there's no flash of the wrong theme on reload. Outside of the role
+accent above, it reuses the same semantic colors (slate/emerald/amber/rose)
+throughout, just with `dark:` variants — no separate dark palette.
 
 Loosening `GET /clients/{id}` and `GET /suppliers/{id}` from owner-only to
 any authenticated user (to support the detail slide-over) only removes an
@@ -181,11 +199,12 @@ fields to any authenticated user.
 
 ## Setup instructions
 
-Verified end-to-end on Windows: full stack built and ran via Docker, demo
-data seeded against a real MongoDB instance, and the app driven through a
-real browser (login, dashboard, ranked matches, notifications) for both a
-client and a supplier account — see [Known limitations](#known-limitations--future-work)
-for anything not covered.
+Verified end-to-end on Windows: full stack built and ran via Docker,
+sample data seeded against a real MongoDB instance, and the app driven
+through a real browser (login, dashboard, ranked matches, notifications)
+for both a client and a supplier account — see
+[Known limitations](#known-limitations--future-work) for anything not
+covered.
 
 ### Option A — Docker (recommended, one command)
 
@@ -242,7 +261,7 @@ npm run dev
 Visit http://localhost:5173. The Vite dev server proxies `/api/*` to
 `http://localhost:8000` — see `frontend/vite.config.js`.
 
-### Seeding demo data
+### Seeding sample data
 
 With the backend running against a real MongoDB instance (or the Docker
 containers already up — run it inside the backend container with `docker
@@ -258,9 +277,10 @@ User profile (full name, phone number, and company/supplier name) —
 including a strong match, a deliberately poor match (mismatched
 price/location), a partial-stock match, a client with zero suppliers in
 its category, and a supplier with zero clients in its category, so every
-dashboard state is reachable in the demo. Runs the matching engine and
-prints demo login credentials (all seeded accounts use password
-`demo12345`). Safe to re-run — it clears only these exact seeded accounts
+dashboard state is reachable for testing and review. Runs the matching
+engine and prints the sample accounts' login credentials (all seeded
+accounts use password `demo12345`). Safe to re-run — it clears only these
+exact seeded accounts
 first.
 
 ### Running backend tests
@@ -385,7 +405,7 @@ matchmaking-platform/
 │   │   ├── services/      # embeddings, sub-scoring, matching orchestration, profiles
 │   │   │                  # (resolves company_name/supplier_name from the owning User)
 │   │   └── main.py        # app entrypoint, router wiring, CORS, rate-limit exception handler
-│   ├── seed.py                          # demo data seeding script
+│   ├── seed.py                          # sample data seeding script
 │   ├── migrate_user_profile_fields.py   # one-off migration, see "Upgrading an existing database"
 │   ├── test_pipeline.py                 # matching engine regression test
 │   ├── test_server_boot.py              # full API surface regression test
@@ -409,8 +429,8 @@ matchmaking-platform/
 │   │   │                    # (dense table + chat), Chats (every interest with >=1 message)
 │   │   ├── theme.js          # dark-mode read/apply helpers, used by Settings and index.html's
 │   │   │                     # pre-paint script
-│   │   ├── roleTheme.js       # client (indigo) vs. supplier (violet) accent color lookup,
-│   │   │                      # getRoleAccent(role) — see the UI section above
+│   │   ├── roleTheme.js       # client (sage) vs. supplier (peach) pastel palette + contrast
+│   │   │                      # math — see the UI section above and index.css's [data-role] block
 │   │   ├── utils/timeAgo.js  # relative-timestamp helper for the Recent Activity feed
 │   │   └── App.jsx           # routing + fixed-height sidebar/main-content shell layout
 │   │                         # (main is the ONLY scrolling region — see the UI section above)
@@ -434,8 +454,8 @@ matchmaking-platform/
   both poll on a short interval instead. Simpler to run and deploy, at the
   cost of a few seconds of latency versus true real-time.
 - **Chat is text-only.** No read receipts, typing indicators, attachments,
-  or message editing/deletion — a deliberately small scope for this
-  evaluation.
+  or message editing/deletion — keeps the messaging surface focused on the
+  core matchmaking conversation instead of building out a full chat product.
 - **Rate limiting is in-memory and per-process**, not backed by Redis —
   fine for a single-instance deployment (including the Docker setup here),
   would need a shared store behind a load balancer.
@@ -444,5 +464,5 @@ matchmaking-platform/
   but has no historical source for full_name/phone_number — those show as
   empty until the affected user fills them in from Settings.
 - **Location matching uses a static ~30–40 city lookup**, not live
-  geocoding — sufficient for a demo, would need a proper geocoding API or a
-  fuller dataset for production coverage.
+  geocoding — covers the major Indian business hubs this platform targets;
+  broader coverage would need a proper geocoding API or a fuller dataset.

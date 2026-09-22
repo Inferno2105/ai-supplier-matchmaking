@@ -4,8 +4,95 @@
 
 @theme {
   --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  /* Wordmark-only — the sidebar logo, not a general body/heading font.
+     Loaded via Google Fonts in index.html. Generates the `font-wordmark`
+     utility (Tailwind v4 turns any --font-* theme key into a font-*
+     utility automatically). */
+  --font-wordmark: "Playfair Display", Georgia, serif;
 }
 
 body {
   @apply bg-slate-50 text-slate-800 antialiased dark:bg-slate-900 dark:text-slate-100;
+}
+
+/*
+ * Role accent colors — see frontend/src/roleTheme.js for the palette
+ * values and the WCAG contrast math behind every choice below. The raw
+ * four-tier variables (darkest/mid/soft/lightest) are the literal palette;
+ * the semantic ones (--role-button-bg, --role-nav-bg, etc.) are derived
+ * from them per use-case, so a component only ever asks for "the button
+ * color" or "the nav active color", not a specific tier, and the mapping
+ * can be retuned here without touching component code.
+ *
+ * `data-role` is set on the app shell root (App.jsx) once the logged-in
+ * user's role is known; `.dark` is the existing dark-mode class on <html>.
+ */
+[data-role="client"] {
+  --role-darkest: #778873;
+  --role-mid: #a1bc98;
+  --role-soft: #dccfc0;
+  --role-lightest: #fdf6ed;
+
+  /* Light mode: button label contrast is the same for both roles' darkest
+     (see roleTheme.js), so both use darkest-bg + white text. */
+  --role-button-bg: var(--role-darkest);
+  --role-button-text: #ffffff;
+  --role-nav-bg: var(--role-lightest);
+  --role-nav-text: var(--role-darkest);
+  --role-nav-border: var(--role-mid);
+  --role-badge-bg: var(--role-lightest);
+  --role-badge-text: var(--role-darkest);
+  --role-link: var(--role-darkest);
+  --role-selected-bg: var(--role-lightest);
+  --role-selected-border: var(--role-mid);
+}
+
+[data-role="supplier"] {
+  --role-darkest: #4a4a4a;
+  --role-mid: #e2b4bd;
+  --role-soft: #f7d6d0;
+  --role-lightest: #fff5f5;
+
+  --role-button-bg: var(--role-darkest);
+  --role-button-text: #ffffff;
+  --role-nav-bg: var(--role-lightest);
+  --role-nav-text: var(--role-darkest);
+  --role-nav-border: var(--role-mid);
+  --role-badge-bg: var(--role-lightest);
+  --role-badge-text: var(--role-darkest);
+  --role-link: var(--role-darkest);
+  --role-selected-bg: var(--role-lightest);
+  --role-selected-border: var(--role-mid);
+}
+
+/*
+ * Dark mode override for TEXT-ON-TRANSPARENT elements only (nav label,
+ * badge text, links). `darkest` fails or nearly fails against the app's
+ * dark slate surfaces (supplier's plain gray darkest is only 2.01:1
+ * against slate-900), while `mid` reads well for both roles (8.64:1 /
+ * 9.78:1) — so dark mode swaps the accent tier from darkest to mid for
+ * these, using a low-opacity mid tint for backgrounds instead of the
+ * bright `lightest` tint (which would wash out / clash on a dark sidebar).
+ * Buttons are untouched here on purpose: a solid darkest-filled button
+ * with white text doesn't depend on the page background and already
+ * contrasts well in both themes.
+ */
+.dark[data-role="client"],
+.dark [data-role="client"] {
+  --role-nav-bg: color-mix(in srgb, var(--role-mid) 18%, transparent);
+  --role-nav-text: var(--role-mid);
+  --role-badge-bg: color-mix(in srgb, var(--role-mid) 22%, transparent);
+  --role-badge-text: var(--role-mid);
+  --role-link: var(--role-mid);
+  --role-selected-bg: color-mix(in srgb, var(--role-mid) 14%, transparent);
+}
+
+.dark[data-role="supplier"],
+.dark [data-role="supplier"] {
+  --role-nav-bg: color-mix(in srgb, var(--role-mid) 18%, transparent);
+  --role-nav-text: var(--role-mid);
+  --role-badge-bg: color-mix(in srgb, var(--role-mid) 22%, transparent);
+  --role-badge-text: var(--role-mid);
+  --role-link: var(--role-mid);
+  --role-selected-bg: color-mix(in srgb, var(--role-mid) 14%, transparent);
 }

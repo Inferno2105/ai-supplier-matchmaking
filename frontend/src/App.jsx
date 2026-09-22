@@ -25,7 +25,10 @@ function Bootstrap({ children }) {
 function AppShell() {
   const { user } = useAuth();
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
+    <div
+      data-role={user?.role}
+      className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900"
+    >
       {user && <Sidebar />}
       <main className="h-screen min-w-0 flex-1 overflow-y-auto">
         <Routes>
