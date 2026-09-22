@@ -52,3 +52,8 @@ class InterestOut(BaseModel):
     counterpart_name: str | None = None
     counterpart_product: str | None = None
     counterpart_is_active: bool | None = None
+    # Cheap existence check against the Message collection, batched across
+    # every interest returned by a listing route rather than queried per
+    # row — lets the frontend distinguish "Start Chat" from "Open Chat"
+    # and power the dedicated Chats page without a new stored field.
+    has_messages: bool = False

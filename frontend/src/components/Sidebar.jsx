@@ -5,6 +5,7 @@ import {
   Store,
   FilePlus,
   Handshake,
+  MessageCircle,
   Bell,
   LogOut,
   ChevronsLeft,
@@ -14,6 +15,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getMyNotifications } from "../api/resources";
 import NotificationPanel from "./NotificationPanel";
+import { getRoleAccent } from "../roleTheme";
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
@@ -55,6 +57,7 @@ export default function Sidebar() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const isClient = user.role === "client";
+  const accent = getRoleAccent(user.role);
 
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -65,6 +68,7 @@ export default function Sidebar() {
       icon: FilePlus,
     },
     { to: "/past-interest", label: "Past Interest", icon: Handshake },
+    { to: "/chats", label: "Chats", icon: MessageCircle },
     { to: "/settings", label: "Settings", icon: Settings },
   ];
 
@@ -97,10 +101,10 @@ export default function Sidebar() {
             to={item.to}
             title={collapsed ? item.label : undefined}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+              `flex items-center gap-3 rounded-lg border-l-2 px-3 py-2 text-sm font-medium transition ${
                 isActive
-                  ? "border-l-2 border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300"
-                  : "border-l-2 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-slate-100"
+                  ? accent.navActive
+                  : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-slate-100"
               }`
             }
           >
@@ -142,7 +146,9 @@ export default function Sidebar() {
         {!collapsed && (
           <div className="mt-2 px-3">
             <p className="truncate text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
-            <span className="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium capitalize text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
+            <span
+              className={`mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${accent.badge}`}
+            >
               {user.role}
             </span>
           </div>

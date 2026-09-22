@@ -129,13 +129,16 @@ the matching engine explainable rather than a black box.
 
 ## UI
 
-Navigation is a collapsible left sidebar (icon-only when collapsed, with
-hover tooltips) — Dashboard, Browse Marketplace, New Requirement/Offering,
-Past Interest, and Settings, with the notification bell and account info
-pinned to the bottom. The dashboard overview renders as individual stat
-cards (icon + number, no fabricated trend charts — there's no time-series
-backend endpoint behind these numbers, so no sparkline was added rather
-than faking one), a "Your requirements/offerings" list with per-item
+Navigation is a collapsible left sidebar, fixed to the viewport regardless
+of how long the page content scrolls (the app shell uses a fixed-height,
+`overflow-hidden` outer wrapper with `<main>` as the only scrolling
+region — the sidebar and its logo/account block never move) — Dashboard,
+Browse Marketplace, New Requirement/Offering, Past Interest, Chats, and
+Settings, with the notification bell and account info pinned to the
+bottom. The dashboard overview renders as individual stat cards (icon +
+number, no fabricated trend charts — there's no time-series backend
+endpoint behind these numbers, so no sparkline was added rather than
+faking one), a "Your requirements/offerings" list with per-item
 Edit/Withdraw actions (or a single Reactivate action once withdrawn), a
 ranked-matches column, and a Recent Activity feed merging notifications,
 interest updates, and new matches. The marketplace and Past Interest pages
@@ -145,15 +148,31 @@ both client and supplier roles. Clicking any counterpart's name — on a
 match card, a marketplace row, or a Past Interest row — opens a right-side
 detail slide-over with that client/supplier's full profile, including a
 "Withdrawn" badge if that listing has since been withdrawn (closes on
-Escape, backdrop click, or the close button). Past Interest also has a
-"Start Chat" action on any `accepted` interest, opening a slide-over
-message panel that polls for new messages every 12 seconds while open.
+Escape, backdrop click, or the close button). Past Interest has a chat
+action on any `accepted` interest — "Start Chat" if no messages have been
+exchanged yet, "Open Chat" once they have — opening a slide-over message
+panel that polls for new messages every 12 seconds while open. Every
+interest with at least one message also shows up on the dedicated **Chats**
+page, so ongoing conversations don't get lost in the full interest history.
+
+**Role-based accent color**: the logged-in user's role is now visually
+obvious everywhere, not just inferable from "Your requirements/offerings"
+— a client's UI accents in indigo, a supplier's in violet (the same
+color-coding StatCard already used for "Total clients" vs. "Total
+suppliers"). Applied to the sidebar's active nav item, the role badge next
+to the account email (and on the Settings profile section), primary action
+buttons (Submit requirement/offering, Express Interest, Save in Settings,
+Send in chat, New requirement/offering), and a colored left-border accent
+on the Dashboard's own-listing cards, Match cards, and Past Interest/Chats
+rows. `ScoreBadge` (match quality) and `InterestStatusBadge` (interest
+status) deliberately keep their own independent emerald/lime/amber/rose
+coding, untouched by role. See `frontend/src/roleTheme.js`.
 
 Dark mode is available from Settings → Appearance (a toggle, not a
 separate page), persisted to `localStorage` and applied before first paint
 so there's no flash of the wrong theme on reload. It reuses the same
-semantic colors (indigo/slate/emerald/amber/rose) throughout, just with
-`dark:` variants — no separate dark palette.
+semantic colors (indigo/violet/slate/emerald/amber/rose) throughout, just
+with `dark:` variants — no separate dark palette.
 
 Loosening `GET /clients/{id}` and `GET /suppliers/{id}` from owner-only to
 any authenticated user (to support the detail slide-over) only removes an
@@ -252,7 +271,7 @@ python test_pipeline.py                  # matching engine logic, in-memory mock
 python test_server_boot.py               # full HTTP API surface, in-memory mock DB
 python test_interests_marketplace.py     # Interest rules + marketplace browsing, in-memory mock DB
 python test_withdraw_edit.py             # withdraw/edit/reactivate + re-matching, in-memory mock DB
-python test_activity_messaging.py        # activity feed + Interest-scoped messaging, in-memory mock DB
+python test_activity_messaging.py        # activity feed + messaging + has_messages/has_chat, in-memory mock DB
 python test_rate_limiting.py             # login/interest rate limits, in-memory mock DB
 python test_settings_profile.py          # registration validation + Settings routes, in-memory mock DB
 ```
@@ -316,7 +335,7 @@ auto-generates this from the route definitions). Summary:
 | GET | `/marketplace/suppliers?category=&state=&search=` | Client-facing: every active supplier offering, not just same-category matches, with `already_interested` per item. `search` matches supplier name or product offered |
 | GET | `/marketplace/clients?category=&state=&search=` | Supplier-facing mirror of the above, searching company name / product requirement |
 | POST | `/interests` | Express interest in a specific client/supplier pair — does **not** touch the matching/embedding engine (rate-limited: 20/minute per IP) |
-| GET | `/interests/me` | Current user's Interest records (both sides), newest first |
+| GET | `/interests/me?has_chat=` | Current user's Interest records (both sides), newest first. Each includes `has_messages` (a batched existence check against the Message collection, not a stored field). Optional `has_chat=true/false` filters to interests with/without at least one message — powers the Chats page |
 | PATCH | `/interests/{id}/accept` | Only the non-initiating side; `proposed` → `accepted` |
 | PATCH | `/interests/{id}/decline` | Only the non-initiating side; `proposed` → `declined` |
 | POST | `/interests/{id}/messages` | Send a text message — only the two parties, only once `accepted` |
@@ -387,11 +406,14 @@ matchmaking-platform/
 │   │   ├── context/         # AuthContext
 │   │   ├── pages/           # Login, Register, Dashboard, Settings, Client/Supplier forms
 │   │   │                    # (create + edit), Marketplace (dense table), Past Interest
-│   │   │                    # (dense table + chat)
+│   │   │                    # (dense table + chat), Chats (every interest with >=1 message)
 │   │   ├── theme.js          # dark-mode read/apply helpers, used by Settings and index.html's
 │   │   │                     # pre-paint script
+│   │   ├── roleTheme.js       # client (indigo) vs. supplier (violet) accent color lookup,
+│   │   │                      # getRoleAccent(role) — see the UI section above
 │   │   ├── utils/timeAgo.js  # relative-timestamp helper for the Recent Activity feed
-│   │   └── App.jsx           # routing + sidebar/main-content shell layout
+│   │   └── App.jsx           # routing + fixed-height sidebar/main-content shell layout
+│   │                         # (main is the ONLY scrolling region — see the UI section above)
 │   ├── Dockerfile
 │   └── nginx.conf
 └── docker-compose.yml

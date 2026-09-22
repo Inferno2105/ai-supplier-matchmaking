@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
+from typing import Optional
 
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.core.database import client_profiles, supplier_profiles, interests, notifications
+from app.core.database import messages as messages_col
 from app.core.limiter import limiter
 from app.core.security import get_current_user, TokenData
 from app.models.interest import InterestCreate, InterestInDB, InterestOut, InitiatedBy, InterestStatus
@@ -18,6 +20,7 @@ def _to_out(
     counterpart_name: str | None,
     counterpart_product: str | None,
     counterpart_is_active: bool | None = None,
+    has_messages: bool = False,
 ) -> InterestOut:
     return InterestOut(
         id=str(doc["_id"]),
@@ -30,6 +33,7 @@ def _to_out(
         counterpart_name=counterpart_name,
         counterpart_product=counterpart_product,
         counterpart_is_active=counterpart_is_active,
+        has_messages=has_messages,
     )
 
 
@@ -107,7 +111,10 @@ async def create_interest(request: Request, payload: InterestCreate, current: To
 
 
 @router.get("/me", response_model=list[InterestOut])
-async def my_interests(current: TokenData = Depends(get_current_user)):
+async def my_interests(
+    has_chat: Optional[bool] = Query(None, description="Filter to interests with at least one message"),
+    current: TokenData = Depends(get_current_user),
+):
     if current.role == "client":
         my_ids = await _own_profile_ids(client_profiles, current.user_id)
         query = {"client_id": {"$in": my_ids}}
@@ -120,8 +127,18 @@ async def my_interests(current: TokenData = Depends(get_current_user)):
     if not my_ids:
         return []
 
+    docs = [doc async for doc in interests.find(query).sort("created_at", -1)]
+
+    # One batched query for "which of these interests have >=1 message",
+    # instead of a per-row existence check (N+1).
+    interest_ids = [str(doc["_id"]) for doc in docs]
+    ids_with_messages = set(await messages_col.distinct("interest_id", {"interest_id": {"$in": interest_ids}}))
+
     out = []
-    async for doc in interests.find(query).sort("created_at", -1):
+    for doc in docs:
+        has_messages = str(doc["_id"]) in ids_with_messages
+        if has_chat is not None and has_messages != has_chat:
+            continue
         client_doc = await client_profiles.find_one({"_id": ObjectId(doc["client_id"])})
         supplier_doc = await supplier_profiles.find_one({"_id": ObjectId(doc["supplier_id"])})
         if current.role == "client":
@@ -132,7 +149,7 @@ async def my_interests(current: TokenData = Depends(get_current_user)):
             name = await client_display_name(client_doc)
             product = client_doc["product_requirement"] if client_doc else None
             active = client_doc.get("is_active", True) if client_doc else None
-        out.append(_to_out(doc, name, product, active))
+        out.append(_to_out(doc, name, product, active, has_messages))
     return out
 
 

@@ -119,6 +119,35 @@ print("\n--- A new message notifies the OTHER party ---")
 r = client.get("/notifications/me", headers=auth(supplier_token))
 assert any("New message from Acme Manufacturing" in n["message"] for n in r.json())
 
+print("\n--- has_messages / has_chat filter (batched, no N+1) ---")
+r = client.post("/clients", json={
+    "product_requirement": "chatless requirement", "category": "Raw Materials & Metals",
+    "quantity_required": 1, "budget_min": 1, "budget_max": 2, "state": "Delhi",
+    "city": "New Delhi", "delivery_days_needed": 1, "notes": "",
+}, headers=auth(client_token))
+client_id_2 = r.json()["id"]
+r = client.post("/interests", json={"client_id": client_id_2, "supplier_id": supplier_id}, headers=auth(client_token))
+interest_id_2 = r.json()["id"]
+assert r.json()["has_messages"] is False, "brand new interest must not report has_messages"
+client.patch(f"/interests/{interest_id_2}/accept", headers=auth(supplier_token))
+# interest_id has messages (sent above), interest_id_2 is accepted but has none
+
+r = client.get("/interests/me", headers=auth(client_token))
+by_id = {i["id"]: i for i in r.json()}
+assert by_id[interest_id]["has_messages"] is True
+assert by_id[interest_id_2]["has_messages"] is False
+print("has_messages per interest:", {k: v["has_messages"] for k, v in by_id.items()})
+
+r = client.get("/interests/me", params={"has_chat": "true"}, headers=auth(client_token))
+ids = [i["id"] for i in r.json()]
+assert ids == [interest_id], ids
+print("has_chat=true filter:", ids)
+
+r = client.get("/interests/me", params={"has_chat": "false"}, headers=auth(client_token))
+ids = [i["id"] for i in r.json()]
+assert ids == [interest_id_2], ids
+print("has_chat=false filter:", ids)
+
 print("\n--- GET /activity/me merges notifications, interest, and match entries ---")
 r = client.get("/activity/me", headers=auth(client_token))
 print(r.status_code)

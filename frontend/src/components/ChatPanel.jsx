@@ -2,9 +2,11 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { X, Send } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getMessages, sendMessage } from "../api/resources";
+import { getRoleAccent } from "../roleTheme";
 
 export default function ChatPanel({ open, interestId, counterpartName, onClose }) {
   const { user } = useAuth();
+  const accent = getRoleAccent(user?.role);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -96,13 +98,11 @@ export default function ChatPanel({ open, interestId, counterpartName, onClose }
               <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                    mine
-                      ? "bg-indigo-600 text-white"
-                      : "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200"
+                    mine ? accent.button : "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200"
                   }`}
                 >
                   <p>{m.text}</p>
-                  <p className={`mt-1 text-[10px] ${mine ? "text-indigo-100" : "text-slate-400 dark:text-slate-500"}`}>
+                  <p className={`mt-1 text-[10px] ${mine ? "text-white/70" : "text-slate-400 dark:text-slate-500"}`}>
                     {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -125,7 +125,7 @@ export default function ChatPanel({ open, interestId, counterpartName, onClose }
           <button
             type="submit"
             disabled={sending || !text.trim()}
-            className="flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-white hover:bg-indigo-700 disabled:opacity-60"
+            className={`flex items-center justify-center rounded-md px-3 py-2 disabled:opacity-60 ${accent.button}`}
           >
             <Send className="h-4 w-4" />
           </button>

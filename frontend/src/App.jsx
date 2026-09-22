@@ -10,6 +10,7 @@ import ClientFormPage from "./pages/ClientFormPage";
 import SupplierFormPage from "./pages/SupplierFormPage";
 import MarketplacePage from "./pages/MarketplacePage";
 import PastInterestPage from "./pages/PastInterestPage";
+import ChatsPage from "./pages/ChatsPage";
 import SettingsPage from "./pages/SettingsPage";
 
 function Bootstrap({ children }) {
@@ -24,9 +25,9 @@ function Bootstrap({ children }) {
 function AppShell() {
   const { user } = useAuth();
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
       {user && <Sidebar />}
-      <main className="min-w-0 flex-1 overflow-y-auto">
+      <main className="h-screen min-w-0 flex-1 overflow-y-auto">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -51,6 +52,14 @@ function AppShell() {
             element={
               <ProtectedRoute>
                 <PastInterestPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chats"
+            element={
+              <ProtectedRoute>
+                <ChatsPage />
               </ProtectedRoute>
             }
           />

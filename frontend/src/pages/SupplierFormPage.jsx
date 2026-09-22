@@ -9,6 +9,7 @@ import {
 } from "../api/resources";
 import { useAuth } from "../context/AuthContext";
 import { TextField, TextAreaField, SelectField } from "../components/FormFields";
+import { getRoleAccent } from "../roleTheme";
 
 const EMPTY = {
   product_offered: "",
@@ -25,6 +26,7 @@ const EMPTY = {
 export default function SupplierFormPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const accent = getRoleAccent(user?.role);
   const { id } = useParams();
   const isEdit = Boolean(id);
   const [categories, setCategories] = useState([]);
@@ -115,7 +117,7 @@ export default function SupplierFormPage() {
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
         Submitting as <span className="font-medium text-slate-700 dark:text-slate-300">{user?.supplier_name}</span>.
         Change your supplier name on the{" "}
-        <Link to="/settings" className="text-indigo-600 hover:underline dark:text-indigo-400">
+        <Link to="/settings" className={accent.link}>
           Settings page
         </Link>
         .
@@ -218,7 +220,7 @@ export default function SupplierFormPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+          className={`w-full rounded-md px-4 py-2.5 text-sm font-medium disabled:opacity-60 ${accent.button}`}
         >
           {submitting
             ? isEdit

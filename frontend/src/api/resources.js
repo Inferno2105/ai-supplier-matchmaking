@@ -87,7 +87,10 @@ export const getMarketplaceClients = (filters = {}) =>
 export const expressInterest = (clientId, supplierId) =>
   api.post("/interests", { client_id: clientId, supplier_id: supplierId }).then((r) => r.data);
 
-export const getMyInterests = () => api.get("/interests/me").then((r) => r.data);
+export const getMyInterests = (filters = {}) =>
+  api.get("/interests/me", { params: filters }).then((r) => r.data);
+
+export const getInterestsWithChats = () => getMyInterests({ has_chat: true });
 
 export const acceptInterest = (id) =>
   api.patch(`/interests/${id}/accept`).then((r) => r.data);

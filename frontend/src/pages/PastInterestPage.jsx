@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Check, X, Handshake, MessageCircle } from "lucide-react";
+import { Check, X, Handshake, MessageCirclePlus, MessageCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getMyInterests, acceptInterest, declineInterest } from "../api/resources";
 import InitialAvatar from "../components/InitialAvatar";
@@ -8,9 +8,11 @@ import WithdrawnBadge from "../components/WithdrawnBadge";
 import EmptyState from "../components/EmptyState";
 import DetailSlideOver from "../components/DetailSlideOver";
 import ChatPanel from "../components/ChatPanel";
+import { getRoleAccent } from "../roleTheme";
 
 export default function PastInterestPage() {
   const { user } = useAuth();
+  const accent = getRoleAccent(user?.role);
   const [interests, setInterests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState("");
@@ -80,7 +82,7 @@ export default function PastInterestPage() {
                   const canRespond = i.status === "proposed" && i.initiated_by !== user.role;
                   return (
                     <tr key={i.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/40">
-                      <td className="px-4 py-3">
+                      <td className={`px-4 py-3 ${accent.cardBorder}`}>
                         <button
                           type="button"
                           onClick={() =>
@@ -142,11 +144,15 @@ export default function PastInterestPage() {
                             onClick={() =>
                               setChat({ open: true, interestId: i.id, counterpartName: i.counterpart_name })
                             }
-                            title="Start chat"
-                            className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                            title={i.has_messages ? "Open chat" : "Start chat"}
+                            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${accent.button}`}
                           >
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            Start Chat
+                            {i.has_messages ? (
+                              <MessageCircle className="h-3.5 w-3.5" />
+                            ) : (
+                              <MessageCirclePlus className="h-3.5 w-3.5" />
+                            )}
+                            {i.has_messages ? "Open Chat" : "Start Chat"}
                           </button>
                         ) : (
                           <span className="text-xs text-slate-400 dark:text-slate-500">—</span>

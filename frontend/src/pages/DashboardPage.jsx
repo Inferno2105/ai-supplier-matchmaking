@@ -36,6 +36,7 @@ import EmptyState from "../components/EmptyState";
 import DetailSlideOver from "../components/DetailSlideOver";
 import WithdrawnBadge from "../components/WithdrawnBadge";
 import { timeAgo } from "../utils/timeAgo";
+import { getRoleAccent } from "../roleTheme";
 
 const interestKey = (clientId, supplierId) => `${clientId}::${supplierId}`;
 
@@ -112,6 +113,7 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
+  const accent = getRoleAccent(user.role);
   const itemLabel = isClient ? "requirement" : "offering";
   const currentMatches = matchesByItem[selectedId] ?? [];
 
@@ -175,7 +177,7 @@ export default function DashboardPage() {
         <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Dashboard</h1>
         <Link
           to={isClient ? "/client/new" : "/supplier/new"}
-          className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium ${accent.button}`}
         >
           <FilePlus className="h-4 w-4" />
           New {itemLabel}
@@ -215,9 +217,9 @@ export default function DashboardPage() {
                 <div
                   key={item.id}
                   onClick={() => setSelectedId(item.id)}
-                  className={`w-full cursor-pointer rounded-lg border p-3 text-left text-sm transition ${
+                  className={`w-full cursor-pointer rounded-lg border p-3 text-left text-sm transition ${accent.cardBorder} ${
                     selectedId === item.id
-                      ? "border-indigo-400 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-950/40"
+                      ? accent.cardBorderSelected
                       : "border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700/50"
                   }`}
                 >
@@ -240,7 +242,7 @@ export default function DashboardPage() {
                       <button
                         type="button"
                         onClick={() => handleReactivate(item)}
-                        className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                        className={`flex items-center gap-1 text-xs font-medium hover:underline ${accent.link}`}
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
                         Reactivate
@@ -250,7 +252,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={() => handleEdit(item)}
-                          className="flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                          className={`flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 ${accent.hoverText}`}
                         >
                           <Pencil className="h-3.5 w-3.5" />
                           Edit

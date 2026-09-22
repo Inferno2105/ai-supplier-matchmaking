@@ -14,6 +14,7 @@ dbmod.supplier_profiles = mock_db["supplier_profiles"]
 dbmod.matches = mock_db["matches"]
 dbmod.notifications = mock_db["notifications"]
 dbmod.interests = mock_db["interests"]
+dbmod.messages = mock_db["messages"]
 
 import app.services.embeddings as emb_module
 def _stub_embed_text(text): return set(text.lower().split())

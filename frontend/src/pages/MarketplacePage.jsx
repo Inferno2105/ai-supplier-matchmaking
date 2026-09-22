@@ -15,10 +15,12 @@ import InitialAvatar from "../components/InitialAvatar";
 import EmptyState from "../components/EmptyState";
 import DetailSlideOver from "../components/DetailSlideOver";
 import WithdrawnBadge from "../components/WithdrawnBadge";
+import { getRoleAccent } from "../roleTheme";
 
 export default function MarketplacePage() {
   const { user } = useAuth();
   const isClient = user?.role === "client";
+  const accent = getRoleAccent(user?.role);
 
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState({});
@@ -220,7 +222,7 @@ export default function MarketplacePage() {
                             type="button"
                             onClick={() => handleExpressInterest(item.id)}
                             title="Express interest"
-                            className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${accent.button}`}
                           >
                             <Handshake className="h-3.5 w-3.5" />
                             Express Interest
