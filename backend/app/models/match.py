@@ -37,6 +37,7 @@ class MatchOut(BaseModel):
     # Denormalized display fields, filled in by the route handler
     counterpart_name: str | None = None
     counterpart_product: str | None = None
+    counterpart_is_active: bool | None = None
 
 
 def score_label(score: float) -> str:

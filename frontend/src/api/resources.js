@@ -1,13 +1,22 @@
 import api from "./client";
 
 // --- Auth ---
-export const registerUser = (email, password, role) =>
-  api.post("/auth/register", { email, password, role }).then((r) => r.data);
+export const registerUser = (payload) =>
+  api.post("/auth/register", payload).then((r) => r.data);
 
 export const loginUser = (email, password) =>
   api.post("/auth/login", { email, password }).then((r) => r.data);
 
 export const getMe = () => api.get("/auth/me").then((r) => r.data);
+
+// --- Settings ---
+export const getProfile = () => api.get("/settings/profile").then((r) => r.data);
+
+export const updateProfile = (payload) =>
+  api.patch("/settings/profile", payload).then((r) => r.data);
+
+export const updatePassword = (payload) =>
+  api.patch("/settings/password", payload).then((r) => r.data);
 
 // --- Reference data ---
 export const getCategories = () => api.get("/categories").then((r) => r.data);
@@ -22,6 +31,15 @@ export const getMyRequirements = () =>
 
 export const getClientById = (id) => api.get(`/clients/${id}`).then((r) => r.data);
 
+export const updateClientRequirement = (id, payload) =>
+  api.patch(`/clients/${id}`, payload).then((r) => r.data);
+
+export const withdrawClientRequirement = (id) =>
+  api.patch(`/clients/${id}/withdraw`).then((r) => r.data);
+
+export const reactivateClientRequirement = (id) =>
+  api.patch(`/clients/${id}/reactivate`).then((r) => r.data);
+
 // --- Supplier portal ---
 export const createSupplierOffering = (payload) =>
   api.post("/suppliers", payload).then((r) => r.data);
@@ -30,6 +48,15 @@ export const getMyOfferings = () =>
   api.get("/suppliers/me").then((r) => r.data);
 
 export const getSupplierById = (id) => api.get(`/suppliers/${id}`).then((r) => r.data);
+
+export const updateSupplierOffering = (id, payload) =>
+  api.patch(`/suppliers/${id}`, payload).then((r) => r.data);
+
+export const withdrawSupplierOffering = (id) =>
+  api.patch(`/suppliers/${id}/withdraw`).then((r) => r.data);
+
+export const reactivateSupplierOffering = (id) =>
+  api.patch(`/suppliers/${id}/reactivate`).then((r) => r.data);
 
 // --- Matches ---
 export const getMatchesForClient = (clientId) =>
@@ -67,3 +94,13 @@ export const acceptInterest = (id) =>
 
 export const declineInterest = (id) =>
   api.patch(`/interests/${id}/decline`).then((r) => r.data);
+
+// --- Activity ---
+export const getActivity = () => api.get("/activity/me").then((r) => r.data);
+
+// --- Messages ---
+export const getMessages = (interestId) =>
+  api.get(`/interests/${interestId}/messages`).then((r) => r.data);
+
+export const sendMessage = (interestId, text) =>
+  api.post(`/interests/${interestId}/messages`, { text }).then((r) => r.data);

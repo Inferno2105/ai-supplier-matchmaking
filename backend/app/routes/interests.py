@@ -1,17 +1,24 @@
 from datetime import datetime, timezone
 
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.database import client_profiles, supplier_profiles, interests, notifications
+from app.core.limiter import limiter
 from app.core.security import get_current_user, TokenData
 from app.models.interest import InterestCreate, InterestInDB, InterestOut, InitiatedBy, InterestStatus
 from app.models.notification import NotificationInDB
+from app.services.profiles import client_display_name, supplier_display_name
 
 router = APIRouter(prefix="/interests", tags=["interests"])
 
 
-def _to_out(doc: dict, counterpart_name: str | None, counterpart_product: str | None) -> InterestOut:
+def _to_out(
+    doc: dict,
+    counterpart_name: str | None,
+    counterpart_product: str | None,
+    counterpart_is_active: bool | None = None,
+) -> InterestOut:
     return InterestOut(
         id=str(doc["_id"]),
         client_id=doc["client_id"],
@@ -22,6 +29,7 @@ def _to_out(doc: dict, counterpart_name: str | None, counterpart_product: str | 
         updated_at=doc["updated_at"],
         counterpart_name=counterpart_name,
         counterpart_product=counterpart_product,
+        counterpart_is_active=counterpart_is_active,
     )
 
 
@@ -30,7 +38,8 @@ async def _own_profile_ids(collection, user_id: str) -> list[str]:
 
 
 @router.post("", response_model=InterestOut, status_code=status.HTTP_201_CREATED)
-async def create_interest(payload: InterestCreate, current: TokenData = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_interest(request: Request, payload: InterestCreate, current: TokenData = Depends(get_current_user)):
     client_doc = await client_profiles.find_one({"_id": ObjectId(payload.client_id)})
     supplier_doc = await supplier_profiles.find_one({"_id": ObjectId(payload.supplier_id)})
     if not client_doc or not supplier_doc:
@@ -77,7 +86,9 @@ async def create_interest(payload: InterestCreate, current: TokenData = Depends(
 
     is_client_initiator = initiated_by == InitiatedBy.client
     other_user_id = supplier_doc["user_id"] if is_client_initiator else client_doc["user_id"]
-    initiator_name = client_doc["company_name"] if is_client_initiator else supplier_doc["supplier_name"]
+    initiator_name = (
+        await client_display_name(client_doc) if is_client_initiator else await supplier_display_name(supplier_doc)
+    )
     # NotificationInDB.match_id is reused here as a generic "related record
     # id" — it isn't a Match, but the field predates Interest and the model
     # is not being changed for this feature.
@@ -87,9 +98,12 @@ async def create_interest(payload: InterestCreate, current: TokenData = Depends(
         message=f"{initiator_name} expressed interest in working with you.",
     ).model_dump())
 
-    counterpart_name = supplier_doc["supplier_name"] if is_client_initiator else client_doc["company_name"]
+    counterpart_name = (
+        await supplier_display_name(supplier_doc) if is_client_initiator else await client_display_name(client_doc)
+    )
     counterpart_product = supplier_doc["product_offered"] if is_client_initiator else client_doc["product_requirement"]
-    return _to_out(doc, counterpart_name, counterpart_product)
+    counterpart_active = supplier_doc.get("is_active", True) if is_client_initiator else client_doc.get("is_active", True)
+    return _to_out(doc, counterpart_name, counterpart_product, counterpart_active)
 
 
 @router.get("/me", response_model=list[InterestOut])
@@ -111,12 +125,14 @@ async def my_interests(current: TokenData = Depends(get_current_user)):
         client_doc = await client_profiles.find_one({"_id": ObjectId(doc["client_id"])})
         supplier_doc = await supplier_profiles.find_one({"_id": ObjectId(doc["supplier_id"])})
         if current.role == "client":
-            name = supplier_doc["supplier_name"] if supplier_doc else None
+            name = await supplier_display_name(supplier_doc)
             product = supplier_doc["product_offered"] if supplier_doc else None
+            active = supplier_doc.get("is_active", True) if supplier_doc else None
         else:
-            name = client_doc["company_name"] if client_doc else None
+            name = await client_display_name(client_doc)
             product = client_doc["product_requirement"] if client_doc else None
-        out.append(_to_out(doc, name, product))
+            active = client_doc.get("is_active", True) if client_doc else None
+        out.append(_to_out(doc, name, product, active))
     return out
 
 
@@ -148,16 +164,23 @@ async def _respond(interest_id: str, current: TokenData, new_status: InterestSta
     doc["updated_at"] = now
 
     initiator_user_id = client_doc["user_id"] if client_initiated else supplier_doc["user_id"]
-    responder_name = supplier_doc["supplier_name"] if client_initiated else client_doc["company_name"]
+    responder_name = (
+        await supplier_display_name(supplier_doc) if client_initiated else await client_display_name(client_doc)
+    )
     await notifications.insert_one(NotificationInDB(
         user_id=initiator_user_id,
         match_id=str(doc["_id"]),
         message=f"{responder_name} {new_status.value} your interest.",
     ).model_dump())
 
-    counterpart_name = supplier_doc["supplier_name"] if current.role == "client" else client_doc["company_name"]
+    counterpart_name = (
+        await supplier_display_name(supplier_doc) if current.role == "client" else await client_display_name(client_doc)
+    )
     counterpart_product = supplier_doc["product_offered"] if current.role == "client" else client_doc["product_requirement"]
-    return _to_out(doc, counterpart_name, counterpart_product)
+    counterpart_active = (
+        supplier_doc.get("is_active", True) if current.role == "client" else client_doc.get("is_active", True)
+    )
+    return _to_out(doc, counterpart_name, counterpart_product, counterpart_active)
 
 
 @router.patch("/{interest_id}/accept", response_model=InterestOut)

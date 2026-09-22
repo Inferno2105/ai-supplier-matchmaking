@@ -1,12 +1,12 @@
 // Full literal classes per slot — Tailwind's JIT scanner needs the
 // complete class string in source, not a template-built one.
 const PALETTE = [
-  { bg: "bg-indigo-100", text: "text-indigo-700" },
-  { bg: "bg-emerald-100", text: "text-emerald-700" },
-  { bg: "bg-amber-100", text: "text-amber-700" },
-  { bg: "bg-rose-100", text: "text-rose-700" },
-  { bg: "bg-violet-100", text: "text-violet-700" },
-  { bg: "bg-cyan-100", text: "text-cyan-700" },
+  { bg: "bg-indigo-100 dark:bg-indigo-900/50", text: "text-indigo-700 dark:text-indigo-300" },
+  { bg: "bg-emerald-100 dark:bg-emerald-900/50", text: "text-emerald-700 dark:text-emerald-300" },
+  { bg: "bg-amber-100 dark:bg-amber-900/50", text: "text-amber-700 dark:text-amber-300" },
+  { bg: "bg-rose-100 dark:bg-rose-900/50", text: "text-rose-700 dark:text-rose-300" },
+  { bg: "bg-violet-100 dark:bg-violet-900/50", text: "text-violet-700 dark:text-violet-300" },
+  { bg: "bg-cyan-100 dark:bg-cyan-900/50", text: "text-cyan-700 dark:text-cyan-300" },
 ];
 
 function colorFor(name) {

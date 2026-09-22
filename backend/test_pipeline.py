@@ -64,11 +64,13 @@ async def main():
     print("=== Pipeline smoke test ===\n")
 
     # 1. Create a client user + requirement
-    client_user = UserInDB(email="client@acme.com", password_hash=hash_password("pass12345"), role=Role.client).model_dump()
+    client_user = UserInDB(
+        email="client@acme.com", password_hash=hash_password("pass12345"), role=Role.client,
+        full_name="Test Client", phone_number="+91 90000 00001", company_name="Acme Manufacturing",
+    ).model_dump()
     client_user_id = str((await dbmod.users.insert_one(client_user)).inserted_id)
 
     client_payload = ClientCreate(
-        company_name="Acme Manufacturing",
         product_requirement="High-grade stainless steel pipes for industrial plumbing, corrosion resistant",
         category="Raw Materials & Metals",
         quantity_required=1000,
@@ -84,11 +86,13 @@ async def main():
     print(f"Created client requirement: {client_id}")
 
     # 2. Create a supplier user + offering (good match: same category, similar product, overlapping budget)
-    supplier_user = UserInDB(email="supplier@steelco.com", password_hash=hash_password("pass12345"), role=Role.supplier).model_dump()
+    supplier_user = UserInDB(
+        email="supplier@steelco.com", password_hash=hash_password("pass12345"), role=Role.supplier,
+        full_name="Test Supplier", phone_number="+91 90000 00002", supplier_name="SteelCo Industries",
+    ).model_dump()
     supplier_user_id = str((await dbmod.users.insert_one(supplier_user)).inserted_id)
 
     supplier_payload = SupplierCreate(
-        supplier_name="SteelCo Industries",
         product_offered="Industrial stainless steel piping, corrosion resistant, ISO 9001 certified",
         category="Raw Materials & Metals",
         available_quantity=1200,
@@ -104,11 +108,13 @@ async def main():
     print(f"Created supplier offering: {supplier_id}")
 
     # 3. A second supplier — deliberately a poor match (different location, tight budget, less stock)
-    supplier2_user = UserInDB(email="supplier2@farsupply.com", password_hash=hash_password("pass12345"), role=Role.supplier).model_dump()
+    supplier2_user = UserInDB(
+        email="supplier2@farsupply.com", password_hash=hash_password("pass12345"), role=Role.supplier,
+        full_name="Test Supplier Two", phone_number="+91 90000 00003", supplier_name="Far Supply Co",
+    ).model_dump()
     supplier2_user_id = str((await dbmod.users.insert_one(supplier2_user)).inserted_id)
 
     supplier2_payload = SupplierCreate(
-        supplier_name="Far Supply Co",
         product_offered="Plastic garden hoses for home use",
         category="Raw Materials & Metals",  # same category but wildly different product on purpose
         available_quantity=200,

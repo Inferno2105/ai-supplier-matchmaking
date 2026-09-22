@@ -32,8 +32,13 @@ from app.main import app
 client = TestClient(app)
 
 
-def register(email, role):
-    r = client.post("/auth/register", json={"email": email, "password": "pass12345", "role": role})
+def register(email, role, name):
+    payload = {
+        "email": email, "password": "pass12345", "role": role,
+        "full_name": "Test User", "phone_number": "+91 90000 00000",
+    }
+    payload["company_name" if role == "client" else "supplier_name"] = name
+    r = client.post("/auth/register", json=payload)
     assert r.status_code == 201, r.json()
     return r.json()["access_token"]
 
@@ -42,9 +47,9 @@ def auth(token):
     return {"Authorization": f"Bearer {token}"}
 
 
-def create_client_profile(token, company_name, category="Raw Materials & Metals"):
+def create_client_profile(token, category="Raw Materials & Metals"):
     r = client.post("/clients", json={
-        "company_name": company_name, "product_requirement": "steel pipes",
+        "product_requirement": "steel pipes",
         "category": category, "quantity_required": 500,
         "budget_min": 10000, "budget_max": 20000, "state": "Maharashtra",
         "city": "Mumbai", "delivery_days_needed": 30, "notes": "",
@@ -53,9 +58,9 @@ def create_client_profile(token, company_name, category="Raw Materials & Metals"
     return r.json()["id"]
 
 
-def create_supplier_profile(token, supplier_name, category="Raw Materials & Metals"):
+def create_supplier_profile(token, category="Raw Materials & Metals"):
     r = client.post("/suppliers", json={
-        "supplier_name": supplier_name, "product_offered": "steel piping",
+        "product_offered": "steel piping",
         "category": category, "available_quantity": 500,
         "price_min": 10000, "price_max": 20000, "state": "Maharashtra",
         "city": "Mumbai", "delivery_days_capable": 20, "notes": "",
@@ -65,15 +70,15 @@ def create_supplier_profile(token, supplier_name, category="Raw Materials & Meta
 
 
 # --- Setup: two client/supplier pairs ---
-client1_token = register("client1@test.com", "client")
-supplier1_token = register("supplier1@test.com", "supplier")
-client1_id = create_client_profile(client1_token, "Client One")
-supplier1_id = create_supplier_profile(supplier1_token, "Supplier One")
+client1_token = register("client1@test.com", "client", "Client One")
+supplier1_token = register("supplier1@test.com", "supplier", "Supplier One")
+client1_id = create_client_profile(client1_token)
+supplier1_id = create_supplier_profile(supplier1_token)
 
-client2_token = register("client2@test.com", "client")
-supplier2_token = register("supplier2@test.com", "supplier")
-client2_id = create_client_profile(client2_token, "Client Two")
-supplier2_id = create_supplier_profile(supplier2_token, "Supplier Two")
+client2_token = register("client2@test.com", "client", "Client Two")
+supplier2_token = register("supplier2@test.com", "supplier", "Supplier Two")
+client2_id = create_client_profile(client2_token)
+supplier2_id = create_supplier_profile(supplier2_token)
 
 print("--- POST /interests (client-initiated) ---")
 r = client.post("/interests", json={"client_id": client1_id, "supplier_id": supplier1_id}, headers=auth(client1_token))

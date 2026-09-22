@@ -46,7 +46,10 @@ print(r.status_code, len(r.json()), "states")
 assert r.status_code == 200
 
 print("\n--- POST /auth/register (client) ---")
-r = client.post("/auth/register", json={"email": "test@acme.com", "password": "pass12345", "role": "client"})
+r = client.post("/auth/register", json={
+    "email": "test@acme.com", "password": "pass12345", "role": "client",
+    "full_name": "Test User", "phone_number": "+91 90000 00000", "company_name": "Acme Corp",
+})
 print(r.status_code, r.json())
 assert r.status_code == 201
 token = r.json()["access_token"]
@@ -59,7 +62,7 @@ assert r.json()["role"] == "client"
 
 print("\n--- POST /clients (auto-triggers matching, 0 suppliers yet) ---")
 r = client.post("/clients", json={
-    "company_name": "Acme Corp", "product_requirement": "steel pipes",
+    "product_requirement": "steel pipes",
     "category": "Raw Materials & Metals", "quantity_required": 500,
     "budget_min": 10000, "budget_max": 20000, "state": "Maharashtra",
     "city": "Mumbai", "delivery_days_needed": 30, "notes": ""
@@ -75,10 +78,13 @@ assert r.status_code == 200
 assert r.json()["total_clients"] == 1
 
 print("\n--- POST /clients as wrong role (should 403) ---")
-r2 = client.post("/auth/register", json={"email": "sup@steel.com", "password": "pass12345", "role": "supplier"})
+r2 = client.post("/auth/register", json={
+    "email": "sup@steel.com", "password": "pass12345", "role": "supplier",
+    "full_name": "Test User", "phone_number": "+91 90000 00000", "supplier_name": "SteelCo",
+})
 sup_token = r2.json()["access_token"]
 r = client.post("/clients", json={
-    "company_name": "X", "product_requirement": "x", "category": "Other",
+    "product_requirement": "x", "category": "Other",
     "quantity_required": 1, "budget_min": 1, "budget_max": 2, "state": "Delhi",
     "city": "New Delhi", "delivery_days_needed": 1, "notes": ""
 }, headers={"Authorization": f"Bearer {sup_token}"})
@@ -92,7 +98,7 @@ assert r.status_code == 401
 
 print("\n--- POST /suppliers as the supplier account ---")
 r = client.post("/suppliers", json={
-    "supplier_name": "SteelCo", "product_offered": "steel piping",
+    "product_offered": "steel piping",
     "category": "Raw Materials & Metals", "available_quantity": 500,
     "price_min": 10000, "price_max": 20000, "state": "Maharashtra",
     "city": "Mumbai", "delivery_days_capable": 20, "notes": ""

@@ -1,14 +1,18 @@
 """
 Supplier offering model. Mirrors ClientCreate's structure (numeric price
 range, numeric delivery days) so the two sides line up cleanly in scoring.
+
+Business identity (supplier_name) is NOT part of this model — see the
+matching note in client.py.
 """
 
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class SupplierCreate(BaseModel):
-    supplier_name: str = Field(min_length=1, max_length=200)
+    model_config = ConfigDict(extra="forbid")
+
     product_offered: str = Field(min_length=1, max_length=2000)
     category: str
     available_quantity: int = Field(gt=0)
@@ -30,10 +34,13 @@ class SupplierCreate(BaseModel):
 
 class SupplierInDB(SupplierCreate):
     user_id: str
+    is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class SupplierOut(SupplierCreate):
     id: str
     user_id: str
+    supplier_name: str
+    is_active: bool = True
     created_at: datetime

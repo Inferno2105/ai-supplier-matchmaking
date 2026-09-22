@@ -4,11 +4,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.database import matches, client_profiles, supplier_profiles
 from app.core.security import get_current_user, TokenData
 from app.models.match import MatchOut, ScoreBreakdown, score_label
+from app.services.profiles import client_display_name, supplier_display_name
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
 
-def _to_out(doc: dict, counterpart_name: str | None, counterpart_product: str | None) -> MatchOut:
+def _to_out(
+    doc: dict,
+    counterpart_name: str | None,
+    counterpart_product: str | None,
+    counterpart_is_active: bool | None = None,
+) -> MatchOut:
     return MatchOut(
         id=str(doc["_id"]),
         client_id=doc["client_id"],
@@ -20,6 +26,7 @@ def _to_out(doc: dict, counterpart_name: str | None, counterpart_product: str | 
         created_at=doc["created_at"],
         counterpart_name=counterpart_name,
         counterpart_product=counterpart_product,
+        counterpart_is_active=counterpart_is_active,
     )
 
 
@@ -34,9 +41,10 @@ async def matches_for_client(client_id: str, current: TokenData = Depends(get_cu
     out = []
     async for doc in matches.find({"client_id": client_id}).sort("score_total", -1):
         supplier_doc = await supplier_profiles.find_one({"_id": ObjectId(doc["supplier_id"])})
-        name = supplier_doc["supplier_name"] if supplier_doc else None
+        name = await supplier_display_name(supplier_doc)
         product = supplier_doc["product_offered"] if supplier_doc else None
-        out.append(_to_out(doc, name, product))
+        active = supplier_doc.get("is_active", True) if supplier_doc else None
+        out.append(_to_out(doc, name, product, active))
     return out
 
 
@@ -51,7 +59,8 @@ async def matches_for_supplier(supplier_id: str, current: TokenData = Depends(ge
     out = []
     async for doc in matches.find({"supplier_id": supplier_id}).sort("score_total", -1):
         client_doc = await client_profiles.find_one({"_id": ObjectId(doc["client_id"])})
-        name = client_doc["company_name"] if client_doc else None
+        name = await client_display_name(client_doc)
         product = client_doc["product_requirement"] if client_doc else None
-        out.append(_to_out(doc, name, product))
+        active = client_doc.get("is_active", True) if client_doc else None
+        out.append(_to_out(doc, name, product, active))
     return out

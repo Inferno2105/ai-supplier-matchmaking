@@ -10,6 +10,7 @@ import ClientFormPage from "./pages/ClientFormPage";
 import SupplierFormPage from "./pages/SupplierFormPage";
 import MarketplacePage from "./pages/MarketplacePage";
 import PastInterestPage from "./pages/PastInterestPage";
+import SettingsPage from "./pages/SettingsPage";
 
 function Bootstrap({ children }) {
   const { bootstrapFromToken } = useAuth();
@@ -23,7 +24,7 @@ function Bootstrap({ children }) {
 function AppShell() {
   const { user } = useAuth();
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
       {user && <Sidebar />}
       <main className="min-w-0 flex-1 overflow-y-auto">
         <Routes>
@@ -54,6 +55,14 @@ function AppShell() {
             }
           />
           <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/client/new"
             element={
               <ProtectedRoute requireRole="client">
@@ -62,7 +71,23 @@ function AppShell() {
             }
           />
           <Route
+            path="/client/edit/:id"
+            element={
+              <ProtectedRoute requireRole="client">
+                <ClientFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/supplier/new"
+            element={
+              <ProtectedRoute requireRole="supplier">
+                <SupplierFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/supplier/edit/:id"
             element={
               <ProtectedRoute requireRole="supplier">
                 <SupplierFormPage />

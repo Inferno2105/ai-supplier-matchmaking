@@ -16,6 +16,7 @@ supplier_profiles = db["supplier_profiles"]
 matches = db["matches"]
 notifications = db["notifications"]
 interests = db["interests"]
+messages = db["messages"]
 
 
 async def ensure_indexes():
@@ -35,3 +36,4 @@ async def ensure_indexes():
     await interests.create_index([("client_id", 1), ("supplier_id", 1)])
     await interests.create_index("client_id")
     await interests.create_index("supplier_id")
+    await messages.create_index("interest_id")

@@ -9,6 +9,7 @@ import {
   LogOut,
   ChevronsLeft,
   ChevronsRight,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getMyNotifications } from "../api/resources";
@@ -64,23 +65,26 @@ export default function Sidebar() {
       icon: FilePlus,
     },
     { to: "/past-interest", label: "Past Interest", icon: Handshake },
+    { to: "/settings", label: "Settings", icon: Settings },
   ];
 
   return (
     <aside
-      className={`flex h-screen shrink-0 flex-col border-r border-slate-200 bg-white transition-all ${
+      className={`flex h-screen shrink-0 flex-col border-r border-slate-200 bg-white transition-all dark:border-slate-700 dark:bg-slate-800 ${
         collapsed ? "w-16" : "w-60"
       }`}
     >
       <div className="flex items-center justify-between px-3 py-4">
         {!collapsed && (
-          <span className="truncate text-base font-semibold text-slate-900">Matchmaking</span>
+          <span className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
+            Matchmaking
+          </span>
         )}
         <button
           type="button"
           onClick={toggleCollapsed}
           title={collapsed ? "Expand" : "Collapse"}
-          className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
         >
           {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
         </button>
@@ -95,8 +99,8 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                 isActive
-                  ? "border-l-2 border-indigo-600 bg-indigo-50 text-indigo-700"
-                  : "border-l-2 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  ? "border-l-2 border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300"
+                  : "border-l-2 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-slate-100"
               }`
             }
           >
@@ -106,13 +110,13 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-slate-200 p-2">
+      <div className="border-t border-slate-200 p-2 dark:border-slate-700">
         <div className="relative">
           <button
             type="button"
             onClick={() => setPanelOpen((o) => !o)}
             title={collapsed ? "Notifications" : undefined}
-            className="relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            className="relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-slate-100"
           >
             <Bell className="h-5 w-5 shrink-0" />
             {!collapsed && <span>Notifications</span>}
@@ -137,8 +141,8 @@ export default function Sidebar() {
 
         {!collapsed && (
           <div className="mt-2 px-3">
-            <p className="truncate text-xs text-slate-500">{user.email}</p>
-            <span className="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium capitalize text-slate-600">
+            <p className="truncate text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
+            <span className="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium capitalize text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
               {user.role}
             </span>
           </div>
@@ -148,7 +152,7 @@ export default function Sidebar() {
           type="button"
           onClick={handleLogout}
           title={collapsed ? "Log out" : undefined}
-          className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
+          className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30"
         >
           <LogOut className="h-5 w-5 shrink-0" />
           {!collapsed && <span>Log out</span>}

@@ -51,3 +51,4 @@ class InterestOut(BaseModel):
     # to whichever side is viewing (mirrors MatchOut's convention).
     counterpart_name: str | None = None
     counterpart_product: str | None = None
+    counterpart_is_active: bool | None = None

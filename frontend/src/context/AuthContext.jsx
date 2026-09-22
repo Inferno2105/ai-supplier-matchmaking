@@ -33,10 +33,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (email, password, role) => {
+  const register = async (payload) => {
     setLoading(true);
     try {
-      const { access_token } = await registerUser(email, password, role);
+      const { access_token } = await registerUser(payload);
       localStorage.setItem("token", access_token);
       const me = await getMe();
       localStorage.setItem("role", me.role);
@@ -53,9 +53,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Re-fetches /auth/me so the sidebar/app-wide `user` object reflects a
+  // profile edit made on the Settings page, without a full page reload.
+  const refreshUser = useCallback(async () => {
+    const me = await getMe();
+    setUser(me);
+    return me;
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, bootstrapFromToken }}
+      value={{ user, loading, login, register, logout, bootstrapFromToken, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,9 +1,25 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.core.database import ensure_indexes
-from app.routes import auth, clients, suppliers, matches, notifications, dashboard, reference, interests, marketplace
+from app.core.limiter import limiter
+from app.routes import (
+    auth,
+    clients,
+    suppliers,
+    matches,
+    notifications,
+    dashboard,
+    reference,
+    interests,
+    marketplace,
+    activity,
+    messages,
+    settings as settings_routes,
+)
 
 
 @asynccontextmanager
@@ -13,6 +29,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="AI-Powered Client-Supplier Matchmaking Platform", lifespan=lifespan)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +50,9 @@ app.include_router(dashboard.router)
 app.include_router(reference.router)
 app.include_router(interests.router)
 app.include_router(marketplace.router)
+app.include_router(activity.router)
+app.include_router(messages.router)
+app.include_router(settings_routes.router)
 
 
 @app.get("/")
