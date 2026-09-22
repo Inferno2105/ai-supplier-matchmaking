@@ -13,6 +13,7 @@ Built for the Wisdom Group AI Intern evaluation.
 - [Architecture](#architecture)
 - [Technology stack](#technology-stack)
 - [AI matching approach](#ai-matching-approach)
+- [UI](#ui)
 - [Setup instructions](#setup-instructions)
 - [API reference](#api-reference)
 - [Project structure](#project-structure)
@@ -49,6 +50,7 @@ the exact submission → matching → notification sequence.
 | Layer | Choice | Why |
 |---|---|---|
 | Frontend | React + Vite + Tailwind CSS | Fast to build forms + a data-dense dashboard |
+| Icons | lucide-react | Consistent icon set across the sidebar, stat cards, and table actions |
 | Backend | FastAPI (Python) | One language for CRUD and AI matching logic — no cross-service calls to a separate matching service |
 | Database | MongoDB | Flexible schema, fits the evolving field set of client/supplier profiles |
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) | Local, free, no API cost or latency — genuine semantic AI without training a model from scratch |
@@ -110,6 +112,19 @@ Every match shows a 0–100 total score with a label (Excellent 80+, Good
 60–79, Fair 40–59, Poor <40, color-coded), plus an expandable "Why this
 match?" breakdown showing all five sub-scores as progress bars. This keeps
 the matching engine explainable rather than a black box.
+
+## UI
+
+Navigation is a collapsible left sidebar (icon-only when collapsed, with
+hover tooltips), not a top navbar — Dashboard, Browse Marketplace, New
+Requirement/Offering, and Past Interest, with the notification bell and
+account info pinned to the bottom. The dashboard overview renders as
+individual stat cards (icon + number, no fabricated trend charts — there's
+no time-series backend endpoint behind these numbers, so no sparkline was
+added rather than faking one). The marketplace and Past Interest pages are
+dense, sortable-by-eye tables with initial-avatar circles, colored icon
+action buttons, and centered icon+message empty states, consistent across
+both client and supplier roles.
 
 ## Setup instructions
 
@@ -227,8 +242,8 @@ auto-generates this from the route definitions). Summary:
 | GET | `/dashboard/overview` | Aggregate stats (totals, average score) |
 | GET | `/categories` | Fixed category dropdown list |
 | GET | `/locations` | State → city dropdown data |
-| GET | `/marketplace/suppliers?category=&state=` | Client-facing: every supplier offering, not just same-category matches, with `already_interested` per item |
-| GET | `/marketplace/clients?category=&state=` | Supplier-facing mirror of the above |
+| GET | `/marketplace/suppliers?category=&state=&search=` | Client-facing: every supplier offering, not just same-category matches, with `already_interested` per item. `search` is a case-insensitive substring match on supplier name or product offered |
+| GET | `/marketplace/clients?category=&state=&search=` | Supplier-facing mirror of the above, searching company name / product requirement |
 | POST | `/interests` | Express interest in a specific client/supplier pair — does **not** touch the matching/embedding engine |
 | GET | `/interests/me` | Current user's Interest records (both sides), newest first |
 | PATCH | `/interests/{id}/accept` | Only the non-initiating side; `proposed` → `accepted` |
@@ -272,10 +287,12 @@ matchmaking-platform/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/            # axios client + typed API calls
-│   │   ├── components/     # ScoreBadge, ScoreBreakdown, Navbar, MatchCard, InterestStatusBadge, etc.
+│   │   ├── components/     # Sidebar, StatCard, EmptyState, InitialAvatar, ScoreBadge,
+│   │   │                   # ScoreBreakdown, MatchCard, InterestStatusBadge, NotificationPanel, etc.
 │   │   ├── context/         # AuthContext
-│   │   ├── pages/           # Login, Register, Dashboard, Client/Supplier forms, Marketplace
-│   │   └── App.jsx          # routing
+│   │   ├── pages/           # Login, Register, Dashboard, Client/Supplier forms,
+│   │   │                    # Marketplace (dense table), Past Interest (dense table)
+│   │   └── App.jsx          # routing + sidebar/main-content shell layout
 │   ├── Dockerfile
 │   └── nginx.conf
 └── docker-compose.yml

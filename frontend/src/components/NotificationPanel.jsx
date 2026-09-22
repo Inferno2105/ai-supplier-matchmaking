@@ -7,7 +7,7 @@ export default function NotificationPanel({ notifications, onClose, onRefresh })
   };
 
   return (
-    <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-slate-200 bg-white shadow-lg">
+    <div className="absolute bottom-full left-0 z-20 mb-2 w-80 rounded-lg border border-slate-200 bg-white shadow-lg">
       <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
         <span className="text-sm font-semibold text-slate-800">Notifications</span>
         <button

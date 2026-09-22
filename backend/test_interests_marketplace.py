@@ -140,6 +140,16 @@ assert r.status_code == 200 and len(r.json()) == 2
 r = client.get("/marketplace/suppliers", params={"category": "Electronics & Components"}, headers=auth(client1_token))
 assert r.status_code == 200 and len(r.json()) == 0
 
+print("\n--- Marketplace: search filter (case-insensitive substring) ---")
+r = client.get("/marketplace/suppliers", params={"search": "supplier one"}, headers=auth(client1_token))
+print(r.status_code, [s["supplier_name"] for s in r.json()])
+assert r.status_code == 200 and len(r.json()) == 1 and r.json()[0]["supplier_name"] == "Supplier One"
+r = client.get("/marketplace/suppliers", params={"search": "no-such-supplier"}, headers=auth(client1_token))
+assert r.status_code == 200 and len(r.json()) == 0
+r = client.get("/marketplace/suppliers", params={"search": "steel piping"}, headers=auth(client1_token))
+print(r.status_code, [s["supplier_name"] for s in r.json()])
+assert r.status_code == 200 and len(r.json()) == 2  # matches product_offered on both
+
 print("\n--- Marketplace: wrong-role access (should 403) ---")
 r = client.get("/marketplace/suppliers", headers=auth(supplier1_token))
 print("supplier calling /marketplace/suppliers:", r.status_code)

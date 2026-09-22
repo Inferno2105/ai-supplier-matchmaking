@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -9,6 +9,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ClientFormPage from "./pages/ClientFormPage";
 import SupplierFormPage from "./pages/SupplierFormPage";
 import MarketplacePage from "./pages/MarketplacePage";
+import PastInterestPage from "./pages/PastInterestPage";
 
 function Bootstrap({ children }) {
   const { bootstrapFromToken } = useAuth();
@@ -19,57 +20,70 @@ function Bootstrap({ children }) {
   return children;
 }
 
-function AppRoutes() {
+function AppShell() {
+  const { user } = useAuth();
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/marketplace"
-          element={
-            <ProtectedRoute>
-              <MarketplacePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/client/new"
-          element={
-            <ProtectedRoute requireRole="client">
-              <ClientFormPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/supplier/new"
-          element={
-            <ProtectedRoute requireRole="supplier">
-              <SupplierFormPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="flex min-h-screen bg-slate-50">
+      {user && <Sidebar />}
+      <main className="min-w-0 flex-1 overflow-y-auto">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace"
+            element={
+              <ProtectedRoute>
+                <MarketplacePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/past-interest"
+            element={
+              <ProtectedRoute>
+                <PastInterestPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/client/new"
+            element={
+              <ProtectedRoute requireRole="client">
+                <ClientFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/supplier/new"
+            element={
+              <ProtectedRoute requireRole="supplier">
+                <SupplierFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 
 export default function App() {
   return (
     <AuthProvider>
-      <Bootstrap>
-        <AppRoutes />
-      </Bootstrap>
+      <BrowserRouter>
+        <Bootstrap>
+          <AppShell />
+        </Bootstrap>
+      </BrowserRouter>
     </AuthProvider>
   );
 }
